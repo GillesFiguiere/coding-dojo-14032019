@@ -18,12 +18,6 @@ const parseSchema = (schemaString) => {
     return schema
 }
 
-const BrowsetheArray = (arg) => {
-    if (arg[0] == '-') {
-        argsArraybrowser.push({ argName: arg[1] })
-    }
-}
-
 const parseArgs = (schemaString, commandArgs) => {
     const argsArray = []
     const schema = parseSchema(schemaString)
