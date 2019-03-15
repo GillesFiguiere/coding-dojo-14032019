@@ -8,13 +8,13 @@ const parseSchemaAndSetDefault = (schemaString) => {
     for (let arg in schema) {
         switch (schema[arg].type) {
             case "boolean":
-                schema[arg].value = false
+                schema[arg].defaultValue = false
                 break
             case "integer":
-                schema[arg].value = 0
+                schema[arg].defaultValue = 0
                 break
             case "string":
-                schema[arg].value = ""
+                schema[arg].defaultValue = ""
                 break
             default:
                 throw TypeError("Unsupported type '" + schema[arg].type + "' for argument '" + arg + "'")
@@ -39,9 +39,9 @@ const parseArgs = (schemaString, commandArgs) => {
         const arg = commandArgs[i]
         if (arg[0] == '-') {
             let value = null
-        
+
             //Check for undefined args
-            if(!schema.hasOwnProperty(arg[1])) throw Error("Undefined argument " + arg)
+            if (!schema.hasOwnProperty(arg[1])) throw Error("Undefined argument " + arg)
 
             switch (schema[arg[1]].type) {
                 case "boolean":
@@ -51,9 +51,9 @@ const parseArgs = (schemaString, commandArgs) => {
                     value = commandArgs[++i]
                     break;
                 case "integer":
-                    if(commandArgs.length == i + 1) throw Error("Argument " + arg + " has no value")
+                    if (commandArgs.length == i + 1) throw Error("Argument " + arg + " has no value")
                     value = parseInt(commandArgs[++i])
-                    if(isNaN(value)) throw Error("Argument " + arg + " expected an integer but got '" + commandArgs[i] + "'")
+                    if (isNaN(value)) throw Error("Argument " + arg + " expected an integer but got '" + commandArgs[i] + "'")
                     break;
                 default:
                 // Should never happen
@@ -66,10 +66,17 @@ const parseArgs = (schemaString, commandArgs) => {
         }
     }
 
-    // check for missing required args
+    // check for missing required args and set default for optionals
     for (let arg in schema) {
-        if (schema[arg].required && !has(argsArray, arg))
-            throw Error("Missing required argument '" + arg + "'")
+        if (!has(argsArray, arg))
+            if (schema[arg].required) {
+                throw Error("Missing required argument '" + arg + "'")
+            } else {
+                argsArray.push({
+                    argName: arg,
+                    value: schema[arg].defaultValue
+                })
+            }
     }
 
     return argsArray
@@ -114,7 +121,7 @@ describe('args', () => {
 
     it('Should return an empty array if no args', () => {
         //GIVEN
-        const schemaString = defaultSchemaString
+        const schemaString = "{}"
         const commandArgs = []
 
         //WHEN
@@ -149,9 +156,15 @@ describe('args', () => {
         expect(result).to.be.true
     })
 
-    it("Should return an array of object not containing the arg l if arg -l is not specified", () => {
+    it("Should return an array of object not containing the arg l if arg -l is not specified and not defined in schema", () => {
         //GIVEN
-        const schemaString = defaultSchemaString
+        const schemaString = `{
+            "p": {
+                "type":"integer",
+                "defaultValue": 0
+            }
+        }`
+
         const commandArgs = ["-p", "8080"]
 
         //WHEN
@@ -170,7 +183,7 @@ describe('args', () => {
         const schema = parseSchemaAndSetDefault(schemaString)
 
         //THEN
-        expect(schema.l.value).to.be.false
+        expect(schema.l.defaultValue).to.be.false
     })
 
     it("Should return 0 as default value for arg -p which is an integer", () => {
@@ -181,7 +194,7 @@ describe('args', () => {
         const schema = parseSchemaAndSetDefault(schemaString)
 
         //THEN
-        expect(schema.p.value).to.equal(0)
+        expect(schema.p.defaultValue).to.equal(0)
     })
 
     it("Should return an empty string as default value for arg -d which is a string", () => {
@@ -192,7 +205,7 @@ describe('args', () => {
         const schema = parseSchemaAndSetDefault(schemaString)
 
         //THEN
-        expect(schema.d.value).to.equal("")
+        expect(schema.d.defaultValue).to.equal("")
     })
 
     it("Should throw an exception if the schema specifies an argument of an unsupported type", () => {
@@ -267,7 +280,7 @@ describe('args', () => {
         //WHEN
 
         //THEN
-        expect(()=>{parseArgs(schemaString, commandArgs)}).to.throw("Undefined argument -z");
+        expect(() => { parseArgs(schemaString, commandArgs) }).to.throw("Undefined argument -z");
     })
 
     it("Should throw an exception if an integer argument has no value", () => {
@@ -278,7 +291,7 @@ describe('args', () => {
         //WHEN
 
         //THEN
-        expect(()=>{parseArgs(schemaString, commandArgs)}).to.throw("Argument -p has no value");
+        expect(() => { parseArgs(schemaString, commandArgs) }).to.throw("Argument -p has no value");
     })
 
     it("Should throw an exception if an integer argument has a non integer value", () => {
@@ -289,7 +302,7 @@ describe('args', () => {
         //WHEN
 
         //THEN
-        expect(()=>{parseArgs(schemaString, commandArgs)}).to.throw("Argument -p expected an integer but got 'twenty'");
+        expect(() => { parseArgs(schemaString, commandArgs) }).to.throw("Argument -p expected an integer but got 'twenty'");
     })
 })
 
