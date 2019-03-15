@@ -3,18 +3,13 @@
 const chai = require('chai')
 var expect = chai.expect;
 
-const parseSchemaAndSetDefault = (schemaString) => {
+const parseSchema = (schemaString) => {
     const schema = JSON.parse(schemaString)
     for (let arg in schema) {
         switch (schema[arg].type) {
             case "boolean":
-                schema[arg].defaultValue = false
-                break
             case "integer":
-                schema[arg].defaultValue = 0
-                break
             case "string":
-                schema[arg].defaultValue = ""
                 break
             default:
                 throw TypeError("Unsupported type '" + schema[arg].type + "' for argument '" + arg + "'")
@@ -31,7 +26,7 @@ const BrowsetheArray = (arg) => {
 
 const parseArgs = (schemaString, commandArgs) => {
     const argsArray = []
-    const schema = parseSchemaAndSetDefault(schemaString)
+    const schema = parseSchema(schemaString)
 
     //Check for undefined args
 
@@ -102,14 +97,17 @@ describe('args', () => {
     const defaultSchemaString = `{
             "l": {
                 "type": "boolean",
+                "defaultValue": false,
                 "required": false
             },
             "p": {
                 "type": "integer",
+                "defaultValue": 0,
                 "required": false
             },
             "d": {
                 "type": "string",
+                "defaultValue": "",
                 "required": false
             }
         }`
@@ -161,6 +159,7 @@ describe('args', () => {
         const schemaString = `{
             "p": {
                 "type":"integer",
+                "required": true,
                 "defaultValue": 0
             }
         }`
@@ -180,7 +179,7 @@ describe('args', () => {
         const schemaString = defaultSchemaString
 
         //WHEN
-        const schema = parseSchemaAndSetDefault(schemaString)
+        const schema = parseSchema(schemaString)
 
         //THEN
         expect(schema.l.defaultValue).to.be.false
@@ -191,7 +190,7 @@ describe('args', () => {
         const schemaString = defaultSchemaString
 
         //WHEN
-        const schema = parseSchemaAndSetDefault(schemaString)
+        const schema = parseSchema(schemaString)
 
         //THEN
         expect(schema.p.defaultValue).to.equal(0)
@@ -202,7 +201,7 @@ describe('args', () => {
         const schemaString = defaultSchemaString
 
         //WHEN
-        const schema = parseSchemaAndSetDefault(schemaString)
+        const schema = parseSchema(schemaString)
 
         //THEN
         expect(schema.d.defaultValue).to.equal("")
@@ -213,6 +212,7 @@ describe('args', () => {
         const schemaString = `{
             "x": {
                 "type": "list",
+                "defaultValue": [],
                 "required": false
             }
         }`
@@ -220,7 +220,7 @@ describe('args', () => {
         //WHEN
 
         //THEN
-        expect(() => { parseSchemaAndSetDefault(schemaString) }).to.throw(TypeError, "Unsupported type 'list' for argument 'x'")
+        expect(() => { parseSchema(schemaString) }).to.throw(TypeError, "Unsupported type 'list' for argument 'x'")
     })
 
     it("Should throw an exception if arg -p that is required in schema is missing in args", () => {
@@ -228,6 +228,7 @@ describe('args', () => {
         const schemaString = `{
             "p": {
                 "type": "integer",
+                "defaultValue": 0,
                 "required": true
             }
         }`
@@ -245,6 +246,7 @@ describe('args', () => {
         const schemaString = `{
             "p": {
                 "type": "integer",
+                "defaultValue": 0,
                 "required": true
             }
         }`
