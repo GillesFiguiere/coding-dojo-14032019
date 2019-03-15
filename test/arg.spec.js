@@ -33,10 +33,15 @@ const parseArgs = (schemaString, commandArgs) => {
     const argsArray = []
     const schema = parseSchemaAndSetDefault(schemaString)
 
+    //Check for undefined args
+
     for (let i = 0; i < commandArgs.length; i++) {
         const arg = commandArgs[i]
         if (arg[0] == '-') {
             let value = null
+        
+            //Check for undefined args
+            if(!schema.hasOwnProperty(arg[1])) throw Error("Undefined argument " + arg)
 
             switch (schema[arg[1]].type) {
                 case "boolean":
@@ -46,6 +51,7 @@ const parseArgs = (schemaString, commandArgs) => {
                     value = commandArgs[++i]
                     break;
                 case "integer":
+                    if(commandArgs.length == i + 1) throw Error("Argument " + arg + " has no value")
                     value = parseInt(commandArgs[++i])
                     break;
                 default:
@@ -250,6 +256,28 @@ describe('args', () => {
 
         //THEN
         expect(pArgsValue).to.equals(8080);
+    })
+
+    it("Should throw an exception if an argument undefined in schema is present in args", () => {
+        //GIVEN
+        const schemaString = defaultSchemaString
+        const commandArgs = ["-z"]
+
+        //WHEN
+
+        //THEN
+        expect(()=>{parseArgs(schemaString, commandArgs)}).to.throw("Undefined argument -z");
+    })
+
+    it("Should throw an exception if an integer argument has no value", () => {
+        //GIVEN
+        const schemaString = defaultSchemaString
+        const commandArgs = ["-p"]
+
+        //WHEN
+
+        //THEN
+        expect(()=>{parseArgs(schemaString, commandArgs)}).to.throw("Argument -p has no value");
     })
 })
 
