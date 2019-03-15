@@ -53,6 +53,7 @@ const parseArgs = (schemaString, commandArgs) => {
                 case "integer":
                     if(commandArgs.length == i + 1) throw Error("Argument " + arg + " has no value")
                     value = parseInt(commandArgs[++i])
+                    if(isNaN(value)) throw Error("Argument " + arg + " expected an integer but got '" + commandArgs[i] + "'")
                     break;
                 default:
                 // Should never happen
@@ -278,6 +279,17 @@ describe('args', () => {
 
         //THEN
         expect(()=>{parseArgs(schemaString, commandArgs)}).to.throw("Argument -p has no value");
+    })
+
+    it("Should throw an exception if an integer argument has a non integer value", () => {
+        //GIVEN
+        const schemaString = defaultSchemaString
+        const commandArgs = ["-p", "twenty"]
+
+        //WHEN
+
+        //THEN
+        expect(()=>{parseArgs(schemaString, commandArgs)}).to.throw("Argument -p expected an integer but got 'twenty'");
     })
 })
 
