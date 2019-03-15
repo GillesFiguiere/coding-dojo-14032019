@@ -1,0 +1,16 @@
+{
+  "name": "20190314",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2"
+  },
+  "scripts": {
+    "test": "mocha test/*.spec.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
