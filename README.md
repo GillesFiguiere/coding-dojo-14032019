@@ -1,5 +1,8 @@
 # Coding dojo du 14/03/2019
 
+Sujet : Command args parser
+[Le kata original](http://codingdojo.org/kata/Args/)
+
 `npm install`
 pour installer les dépendances
 
